@@ -17,6 +17,29 @@
   span { font-family: var(--serif); font-style: italic; font-size: 28px; line-height: 1; letter-spacing: -0.01em; }
 }
 
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.iconButton {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 50%;
+  background: transparent;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: color 0.15s, border-color 0.15s;
+
+  svg { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+  &:hover { color: var(--moon); border-color: rgba(243, 234, 208, 0.35); }
+}
+
 .headerMeta {
   display: flex;
   align-items: center;
