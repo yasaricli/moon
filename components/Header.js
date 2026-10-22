@@ -18,13 +18,10 @@ export default function Header({ connected, lastAt }) {
 
   return (
     <header className={s.header}>
-      <div className={s.brand}>
-        <Link href="/" className={s.logo}>
-          <Moon phase={0.32} size={22} />
-          <span>moon</span>
-        </Link>
-        <FullscreenButton />
-      </div>
+      <Link href="/" className={s.logo}>
+        <Moon phase={0.32} size={22} />
+        <span>moon</span>
+      </Link>
 
       <div className={s.headerMeta}>
         <span className={s.metaItem} data-tone={connected ? "up" : "down"}>
@@ -42,6 +39,7 @@ export default function Header({ connected, lastAt }) {
         )}
         <span className={`${s.clock} num`}>{now ? fmtTime(now) : "--:--:--"}</span>
         <AddMonitor />
+        <FullscreenButton />
       </div>
     </header>
   );
