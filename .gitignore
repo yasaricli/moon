@@ -1,3 +1,4 @@
 node_modules
 .next
 .env
+compose.override.yaml

@@ -39,12 +39,44 @@ Common commands:
 
 ```sh
 docker compose logs -f app          # follow the app logs
-docker compose pull mongo && docker compose up -d --build   # update
 docker compose down                 # stop (data is kept)
 docker compose down -v              # stop and delete all data
 ```
 
-To serve on another port, change the left side of `ports` in `compose.yaml`, e.g. `"8080:3000"`.
+### Local settings
+
+Keep your own changes out of `compose.yaml` so updates never conflict. Put them in `compose.override.yaml` next to it; Compose merges that file automatically and git ignores it. For example, to serve on port 8080:
+
+```yaml
+# compose.override.yaml
+services:
+  app:
+    ports: !override
+      - "8080:3000"
+```
+
+## Updating
+
+moon is under active development. To move an existing install to the latest version, run this in the `moon` folder:
+
+```sh
+git pull
+docker compose pull mongo
+docker compose up -d --build
+```
+
+- `git pull` fetches the new code.
+- `docker compose pull mongo` picks up MongoDB patch releases (the image is pinned to major version 8).
+- `docker compose up -d --build` rebuilds the app image and replaces the running container. MongoDB keeps running, so monitors and check history stay in the `mongo-data` volume; there is no migration step. The dashboard reconnects on its own after the restart, and checking resumes within a minute.
+
+Check which version you're on with `git log -1 --oneline`. To go back to an earlier version, check out that commit and rebuild:
+
+```sh
+git checkout <commit>
+docker compose up -d --build
+```
+
+Old app images pile up after a few updates; `docker image prune -f` removes the unused ones.
 
 > **Monitoring something on the same machine?** Inside the container `localhost` is the container itself. Use `http://host.docker.internal:<port>` instead (on Linux, add `extra_hosts: ["host.docker.internal:host-gateway"]` to the `app` service).
 
