@@ -239,6 +239,7 @@ export default function Detail() {
                 <th>Time</th>
                 <th>Status</th>
                 <th>Response</th>
+                <th>IP</th>
                 <th>Change</th>
               </tr>
             </thead>
@@ -255,6 +256,7 @@ export default function Detail() {
                       </span>
                     </td>
                     <td className="num">{c.ok ? `${c.ms} ms` : "—"}</td>
+                    <td className={`num ${s.ip}`}>{c.ip || "—"}</td>
                     <td className={`num ${s.delta}`} data-tone={delta > 10 ? "slow" : delta < -10 ? "fast" : "normal"}>
                       {delta > 0 ? `+${delta}% slower` : delta < 0 ? `${delta}% faster` : "—"}
                     </td>

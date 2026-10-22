@@ -12,7 +12,7 @@ export default function StatusStrip({ checks, size = RECENT, tall }) {
         <i key={`e${i}`} data-tone="idle" />
       ))}
       {shown.map((c) => (
-        <i key={c.at} data-tone={tone(c)} title={`${fmtDay(c.at)} · ${codeLabel(c)} · ${c.ms} ms`} />
+        <i key={c.at} data-tone={tone(c)} title={`${fmtDay(c.at)} · ${codeLabel(c)} · ${c.ms} ms${c.ip ? ` · ${c.ip}` : ""}`} />
       ))}
     </div>
   );
