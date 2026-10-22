@@ -66,23 +66,43 @@ function DeleteButton({ id }) {
   );
 }
 
+const fmtDate = (t) => new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
 function Certificate({ m }) {
   if (!m.cert && m.url.startsWith("http:")) return <p className={s.none}>Plain HTTP, so there is no certificate to check.</p>;
   if (!m.cert) return <p className={s.none}>Waiting for the first successful check.</p>;
-  const days = certDays(m.cert, Date.now());
-  const date = new Date(m.cert.expires).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+  const now = Date.now();
+  const days = certDays(m.cert, now);
+  const { issued, expires } = m.cert;
+  const left = issued ? Math.min(Math.max((expires - now) / (expires - issued), 0), 1) : 0;
 
   return (
     <div className={s.cert} data-tone={certTone(days)}>
-      <div className={s.certDays}>
-        <b className="num">{days < 0 ? "Expired" : days}</b>
-        {days >= 0 && <span>{days === 1 ? "day left" : "days left"}</span>}
-      </div>
-      <dl>
-        <div>
-          <dt>Expires</dt>
-          <dd>{date}</dd>
+      <b className={`num ${s.certDays}`}>
+        {days < 0 ? "Expired" : days}
+        {days >= 0 && <small>{days === 1 ? "day left" : "days left"}</small>}
+      </b>
+
+      {!!issued && (
+        <div className={s.lifetime}>
+          <div className={s.lifetimeBar} role="img" aria-label={`${Math.round(left * 100)}% of the certificate lifetime left`}>
+            <i style={{ width: `${(1 - left) * 100}%` }} />
+            <i style={{ width: `${left * 100}%` }} />
+          </div>
+          <div className={s.lifetimeDates}>
+            <span>Issued {fmtDate(issued)}</span>
+            <span>Expires {fmtDate(expires)}</span>
+          </div>
         </div>
+      )}
+
+      <dl>
+        {!issued && (
+          <div>
+            <dt>Expires</dt>
+            <dd>{fmtDate(expires)}</dd>
+          </div>
+        )}
         <div>
           <dt>Issued to</dt>
           <dd className="num">{m.cert.subject || "—"}</dd>
