@@ -25,6 +25,13 @@
 [data-tone="info"], [data-tone="fast"] { --tone: var(--info); }
 [data-tone="idle"], [data-tone="normal"] { --tone: var(--muted); }
 
+// timing phases: DNS / TCP / TLS are validated categorical slots; server shares the response-line color
+[data-phase="redirect"] { --phase: #5d6474; }
+[data-phase="dns"] { --phase: #3987e5; }
+[data-phase="tcp"] { --phase: #d95926; }
+[data-phase="tls"] { --phase: #9085e9; }
+[data-phase="server"] { --phase: var(--moon); }
+
 * { box-sizing: border-box; }
 
 html, body { margin: 0; }

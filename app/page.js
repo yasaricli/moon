@@ -9,7 +9,7 @@ import Avatar from "../components/Avatar.js";
 import AddMonitor from "../components/AddMonitor.js";
 import Moon, { phaseOf } from "../components/Moon.js";
 import { useMonitors, useNow, codeLabel } from "../lib/live.js";
-import { summarize, trend, tone } from "../lib/stats.js";
+import { summarize, trend, tone, certDays, certTone } from "../lib/stats.js";
 import s from "./page.module.scss";
 
 const STATE_LABEL = { idle: "Pending", down: "Down", slow: "Slow", up: "Up" };
@@ -28,6 +28,15 @@ function headline(total, down) {
   return `${down} of ${total} monitors down`;
 }
 
+function CertChip({ cert }) {
+  const days = certDays(cert, Date.now());
+  return (
+    <em className={s.certChip} data-tone={certTone(days)} title={`SSL certificate expires ${new Date(cert.expires).toDateString()}`}>
+      SSL · {days < 0 ? "expired" : `${days}d`}
+    </em>
+  );
+}
+
 function Card({ m }) {
   const last = m.checks.at(-1);
   const t = trend(m.checks);
@@ -44,6 +53,7 @@ function Card({ m }) {
             {m.method === "POST" && <b className={s.verb}>POST</b>}
             {m.url.replace(/^https?:\/\//, "").replace(/\/$/, "")}
           </span>
+          {m.cert && <CertChip cert={m.cert} />}
         </div>
         <span className="pill">{STATE_LABEL[state]}</span>
       </div>

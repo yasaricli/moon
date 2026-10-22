@@ -212,3 +212,14 @@
 }
 
 .verb { margin-right: 6px; color: var(--moon); font-weight: 600; }
+
+.certChip {
+  align-self: flex-start;
+  margin-top: 3px;
+  font-style: normal;
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--muted);
+
+  &[data-tone="warn"], &[data-tone="down"] { color: var(--tone); }
+}

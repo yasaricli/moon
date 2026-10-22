@@ -9,7 +9,8 @@ import StatusStrip from "../../../components/StatusStrip.js";
 import TrendChip from "../../../components/TrendChip.js";
 import Avatar from "../../../components/Avatar.js";
 import { useMonitors, getSocket, fmtTime, fmtDay, fmtDuration, codeLabel } from "../../../lib/live.js";
-import { RANGES, summarize, trend, tone, codes, incidents, downsample } from "../../../lib/stats.js";
+import { RANGES, summarize, trend, tone, codes, incidents, downsample, avgPhases, certDays, certTone } from "../../../lib/stats.js";
+import Timing from "../../../components/Timing.js";
 import s from "./detail.module.scss";
 
 const RANGE_LABEL = { "1h": "1h", "24h": "24h", "7d": "7d" };
@@ -65,6 +66,36 @@ function DeleteButton({ id }) {
   );
 }
 
+function Certificate({ m }) {
+  if (!m.cert && m.url.startsWith("http:")) return <p className={s.none}>Plain HTTP, so there is no certificate to check.</p>;
+  if (!m.cert) return <p className={s.none}>Waiting for the first successful check.</p>;
+  const days = certDays(m.cert, Date.now());
+  const date = new Date(m.cert.expires).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
+  return (
+    <div className={s.cert} data-tone={certTone(days)}>
+      <div className={s.certDays}>
+        <b className="num">{days < 0 ? "Expired" : days}</b>
+        {days >= 0 && <span>{days === 1 ? "day left" : "days left"}</span>}
+      </div>
+      <dl>
+        <div>
+          <dt>Expires</dt>
+          <dd>{date}</dd>
+        </div>
+        <div>
+          <dt>Issued to</dt>
+          <dd className="num">{m.cert.subject || "—"}</dd>
+        </div>
+        <div>
+          <dt>Issuer</dt>
+          <dd>{m.cert.issuer || "—"}</dd>
+        </div>
+      </dl>
+    </div>
+  );
+}
+
 function Tile({ label, value, unit, tone, children }) {
   return (
     <div className={s.tile} data-tone={tone}>
@@ -105,6 +136,7 @@ export default function Detail() {
   const codeList = codes(checks);
   const incList = incidents(checks);
   const recent = checks.slice(-20).reverse();
+  const timing = avgPhases(checks);
 
   return (
     <main className="wrap">
@@ -164,6 +196,28 @@ export default function Detail() {
         </div>
         <Chart checks={downsample(checks, 600)} from={to - RANGES[range]} to={to} />
       </section>
+
+      <div className={s.split}>
+        <section className={`panel ${s.block}`}>
+          <div className={s.blockHead}>
+            <div>
+              <h2>Where the time goes</h2>
+              <span className="label">From request start to the first byte of the response</span>
+            </div>
+          </div>
+          {timing ? <Timing last={checks.findLast((c) => c.phases)?.phases} avg={timing} /> : <p className={s.none}>No timing data in this range yet.</p>}
+        </section>
+
+        <section className={`panel ${s.block}`}>
+          <div className={s.blockHead}>
+            <div>
+              <h2>SSL certificate</h2>
+              <span className="label">Checked on every request</span>
+            </div>
+          </div>
+          <Certificate m={m} />
+        </section>
+      </div>
 
       <section className={`panel ${s.block}`}>
         <div className={s.blockHead}>

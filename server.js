@@ -4,7 +4,7 @@ import mongoose from "mongoose";
 import { Server } from "socket.io";
 import { MONGODB_URI, PORT } from "./lib/config.js";
 import { Monitor, Check } from "./lib/models.js";
-import { startChecker, checkOne, toWire } from "./lib/checker.js";
+import { startChecker, checkOne, toWire, certWire } from "./lib/checker.js";
 import { RECENT, RANGES } from "./lib/stats.js";
 
 const dev = process.argv.includes("--dev");
@@ -23,6 +23,7 @@ async function snapshot() {
         // header values and body can hold secrets; only their shape leaves the server
         headerNames: (m.headers || []).map((h) => h.key),
         bodySize: (m.body || "").length,
+        cert: certWire(m.cert),
         checks: checks.reverse().map(toWire),
       };
     }),

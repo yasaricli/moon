@@ -7,6 +7,9 @@ A self-hosted uptime and response-time monitor. Add a website or API, moon reque
 ## Features
 
 - **Checks every minute.** Each check records the response time (time to first byte), the status code and, on failure, the reason (`timeout`, `ENOTFOUND`, `ECONNREFUSED`…).
+- **Where the time goes.** Every check is split into DNS lookup, TCP connect, TLS handshake and server response (plus redirects), so you can see *why* a site is slow.
+- **SSL certificates.** The certificate is read on every HTTPS check; issuer, expiry date and days left are shown on the card and the detail page.
+- **Answering IP.** The IP address that served each check, after following redirects.
 - **Live dashboard.** New results arrive over socket.io; no refresh needed.
 - **Faster / slower.** Every reading is compared with the median of the previous hour and flagged as *faster*, *steady* or *slower*.
 - **Status code history.** One block per check, colored by 2xx / 3xx / 4xx / 5xx-or-error.
