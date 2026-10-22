@@ -1,0 +1,156 @@
+:root {
+  --bg: #07090e;
+  --panel-solid: #11141c;
+  --line: rgba(255, 255, 255, 0.05);
+  --line-strong: rgba(255, 255, 255, 0.09);
+  --text: #eef0f5;
+  --text-2: #a9afbd;
+  --muted: #6c7282;
+  --moon: #f3ead0;
+  --moon-dark: #1a1e29;
+  --up: #5fd4a0;
+  --warn: #f2b562;
+  --down: #f47286;
+  --info: #7cb6ff;
+  --idle: rgba(255, 255, 255, 0.06);
+  --sans: var(--font-sans), system-ui, sans-serif;
+  --mono: var(--font-mono), ui-monospace, monospace;
+  --serif: var(--font-serif), Georgia, serif;
+  color-scheme: dark;
+}
+
+[data-tone="up"] { --tone: var(--up); }
+[data-tone="warn"], [data-tone="slow"] { --tone: var(--warn); }
+[data-tone="down"] { --tone: var(--down); }
+[data-tone="info"], [data-tone="fast"] { --tone: var(--info); }
+[data-tone="idle"], [data-tone="normal"] { --tone: var(--muted); }
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; }
+
+html { overflow-x: clip; }
+
+body {
+  position: relative;
+  min-height: 100vh;
+  background:
+    radial-gradient(900px 520px at 88% -8%, rgba(243, 234, 208, 0.075), transparent 65%),
+    radial-gradient(700px 500px at -10% 20%, rgba(124, 182, 255, 0.04), transparent 70%),
+    var(--bg);
+  color: var(--text);
+  font-family: var(--sans);
+  font-size: 14px;
+  -webkit-font-smoothing: antialiased;
+
+  // a sparse star field, fading out down the page
+  &::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto;
+    height: 900px;
+    pointer-events: none;
+    background-image:
+      radial-gradient(1px 1px at 12% 18%, rgba(255, 255, 255, 0.5), transparent),
+      radial-gradient(1px 1px at 27% 6%, rgba(255, 255, 255, 0.35), transparent),
+      radial-gradient(1.5px 1.5px at 44% 22%, rgba(255, 255, 255, 0.4), transparent),
+      radial-gradient(1px 1px at 63% 9%, rgba(255, 255, 255, 0.45), transparent),
+      radial-gradient(1px 1px at 71% 31%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1.5px 1.5px at 92% 26%, rgba(255, 255, 255, 0.35), transparent),
+      radial-gradient(1px 1px at 5% 41%, rgba(255, 255, 255, 0.3), transparent),
+      radial-gradient(1px 1px at 36% 47%, rgba(255, 255, 255, 0.25), transparent),
+      radial-gradient(1px 1px at 81% 52%, rgba(255, 255, 255, 0.25), transparent),
+      radial-gradient(1px 1px at 55% 63%, rgba(255, 255, 255, 0.2), transparent);
+    mask-image: linear-gradient(#000, transparent);
+    z-index: -1;
+  }
+}
+
+a { color: inherit; text-decoration: none; }
+
+button, input { font: inherit; color: inherit; }
+
+::selection { background: rgba(243, 234, 208, 0.25); }
+
+.wrap {
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+
+  @media (max-width: 640px) { padding: 0 16px 56px; }
+}
+
+.panel {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.015));
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 20px 40px -24px rgba(0, 0, 0, 0.6);
+}
+
+.label {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+.num {
+  font-family: var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+
+.lamp {
+  position: relative;
+  display: inline-block;
+  flex: none;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--tone);
+
+  // radar ping
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    border: 1px solid var(--tone);
+    animation: ping 2.4s cubic-bezier(0, 0, 0.2, 1) infinite;
+  }
+}
+
+[data-tone="down"] > .lamp::after, .lamp[data-tone="down"]::after { animation-duration: 1.2s; }
+[data-tone="idle"] > .lamp::after { display: none; }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px 3px 8px;
+  background: color-mix(in srgb, var(--tone) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--tone) 22%, transparent);
+  color: var(--tone);
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+
+  &::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+  }
+}
+
+// replays whenever the element is re-keyed by a new check
+.flash { animation: flash 1s ease-out; }
+
+@keyframes ping {
+  from { transform: scale(1); opacity: 0.8; }
+  to { transform: scale(3); opacity: 0; }
+}
+@keyframes flash { from { color: var(--moon); text-shadow: 0 0 24px rgba(243, 234, 208, 0.5); } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; }
+}
