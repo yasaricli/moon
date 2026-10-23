@@ -15,6 +15,10 @@ A self-hosted uptime and response-time monitor. Add a website or API, moon reque
 - **Status code history.** One block per check, colored by 2xx / 3xx / 4xx / 5xx-or-error.
 - **Incidents.** Consecutive failures are grouped into incidents with start, end and duration.
 - **GET or POST, custom headers, JSON body.** Header values and request bodies stay on the server and are never sent to the browser.
+- **Edit without losing history.** Change a monitor's URL, method, headers or body; its check history stays. Stored header values and body are kept unless you type new ones.
+- **Tabs.** Create tabs on the dashboard and pick the monitors that belong in each.
+- **Your order.** Drag cards into a custom order, or sort by name, status, uptime or response time.
+- **Public status page.** `/status` shows each service's daily uptime for the last 30 days, grouped by tab, with no controls and no URLs.
 - **Moon phase = uptime.** The moon on the dashboard is full at 100% uptime and wanes towards a new moon at 90% or below.
 
 ![Monitor detail](docs/monitor.png)

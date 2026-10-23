@@ -11,6 +11,7 @@ import Avatar from "../../../components/Avatar.js";
 import { useMonitors, getSocket, fmtTime, fmtDay, fmtDuration, codeLabel } from "../../../lib/live.js";
 import { RANGES, summarize, trend, tone, codes, incidents, downsample, avgPhases, certDays, certTone } from "../../../lib/stats.js";
 import Timing from "../../../components/Timing.js";
+import AddMonitor from "../../../components/AddMonitor.js";
 import s from "./detail.module.scss";
 
 const RANGE_LABEL = { "1h": "1h", "24h": "24h", "7d": "7d" };
@@ -184,6 +185,7 @@ export default function Detail() {
           </div>
         </div>
         <span className="pill">{{ idle: "Pending", down: "Down", slow: "Slow", up: "Up" }[state]}</span>
+        <AddMonitor monitor={m} label="Edit" />
         <DeleteButton id={id} />
       </section>
 
@@ -206,7 +208,7 @@ export default function Detail() {
               {st.count} checks · last {RANGE_LABEL[range]}
             </span>
           </div>
-          <div className={s.tabs} role="tablist">
+          <div className="tabs" role="tablist">
             {Object.keys(RANGES).map((r) => (
               <button key={r} role="tab" aria-selected={r === range} onClick={() => setRange(r)}>
                 {RANGE_LABEL[r]}

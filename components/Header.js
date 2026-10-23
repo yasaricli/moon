@@ -38,6 +38,9 @@ export default function Header({ connected, lastAt }) {
           </span>
         )}
         <span className={`${s.clock} num`}>{now ? fmtTime(now) : "--:--:--"}</span>
+        <Link href="/status" className={s.metaItem}>
+          Status page
+        </Link>
         <AddMonitor />
         <FullscreenButton />
       </div>
