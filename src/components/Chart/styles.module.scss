@@ -1,0 +1,70 @@
+.chart {
+  position: relative;
+  width: 100%;
+
+  svg { display: block; cursor: crosshair; }
+}
+
+.grid { stroke: var(--line); }
+
+.axis {
+  fill: var(--muted);
+  font-family: var(--mono);
+  font-size: 11px;
+}
+
+.line {
+  fill: none;
+  stroke: var(--moon);
+  stroke-width: 2;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.outage { fill: var(--down); opacity: 0.16; }
+
+.ref {
+  --tone: var(--text-2);
+
+  line { stroke: var(--tone); stroke-dasharray: 3 5; opacity: 0.55; }
+  text { fill: var(--tone); font-family: var(--mono); font-size: 11px; paint-order: stroke; stroke: #0d1017; stroke-width: 4px; }
+}
+
+.pulse {
+  fill: var(--moon);
+  stroke: var(--bg);
+  stroke-width: 3;
+  filter: drop-shadow(0 0 6px rgba(243, 234, 208, 0.7));
+}
+
+.cross { stroke: var(--moon); stroke-width: 1; opacity: 0.3; }
+
+.dot { fill: var(--tone); stroke: var(--bg); stroke-width: 3; }
+
+.tip {
+  position: absolute;
+  top: 10px;
+  pointer-events: none;
+  padding: 10px 14px;
+  background: rgba(17, 20, 28, 0.92);
+  backdrop-filter: blur(8px);
+  border: 1px solid var(--line-strong);
+  border-radius: 10px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  font-size: 13px;
+
+  .num { margin-top: 4px; color: var(--text-2); }
+  b { color: var(--tone); font-weight: 600; }
+}
+
+.chartEmpty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 20px;
+  color: var(--muted);
+}

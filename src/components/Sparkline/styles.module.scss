@@ -1,0 +1,10 @@
+.spark {
+  display: block;
+  width: 100%;
+  height: 56px;
+  overflow: visible;
+}
+
+.sparkLine { fill: none; stroke: var(--moon); stroke-width: 1.75; stroke-linejoin: round; }
+
+.sparkOutage { fill: var(--down); opacity: 0.35; }

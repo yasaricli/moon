@@ -1,13 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import s from "./ui.module.scss";
 
-export default function Avatar({ url, name, size = 32 }) {
+// Styles
+import Styles from "./styles.module.scss";
+
+const Avatar = ({ url, name, size = 32 }) => {
   const [failed, setFailed] = useState(false);
 
   return (
-    <span className={s.avatar} style={{ width: size, height: size, fontSize: size * 0.45 }}>
+    <span className={Styles.avatar} style={{ width: size, height: size, fontSize: size * 0.45 }}>
       {failed ? (
         name[0]?.toUpperCase()
       ) : (
@@ -15,4 +17,6 @@ export default function Avatar({ url, name, size = 32 }) {
       )}
     </span>
   );
-}
+};
+
+export default Avatar;

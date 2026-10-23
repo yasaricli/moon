@@ -1,0 +1,39 @@
+.timing { display: flex; flex-direction: column; gap: 14px; }
+
+.timingRow {
+  display: grid;
+  grid-template-columns: 84px 1fr 72px;
+  align-items: center;
+  gap: 14px;
+
+  .num { text-align: right; font-size: 13px; }
+}
+
+.timingBar {
+  display: flex;
+  gap: 2px;
+  height: 14px;
+
+  i {
+    min-width: 3px;
+    background: var(--phase);
+    &:first-child { border-radius: 4px 0 0 4px; }
+    &:last-child { border-radius: 0 4px 4px 0; }
+    &:only-child { border-radius: 4px; }
+  }
+}
+
+.timingCaption { margin-top: 10px; }
+
+.timingLegend {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px 18px;
+
+  li { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-2); }
+  i { flex: none; width: 10px; height: 10px; border-radius: 3px; background: var(--phase); }
+  b { margin-left: auto; font-weight: 500; color: var(--text); white-space: nowrap; }
+}

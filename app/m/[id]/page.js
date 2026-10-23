@@ -1,18 +1,36 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useParams } from "next/navigation";
 import Link from "next/link";
-import Header from "../../../components/Header.js";
-import Chart from "../../../components/Chart.js";
-import StatusStrip from "../../../components/StatusStrip.js";
-import TrendChip from "../../../components/TrendChip.js";
-import Avatar from "../../../components/Avatar.js";
-import { useMonitors, getSocket, fmtTime, fmtDay, fmtDuration, codeLabel } from "../../../lib/live.js";
-import { RANGES, summarize, trend, tone, codes, incidents, downsample, avgPhases, certDays, certTone } from "../../../lib/stats.js";
-import Timing from "../../../components/Timing.js";
-import AddMonitor from "../../../components/AddMonitor.js";
-import s from "./detail.module.scss";
+
+// Components
+import Header from "@/components/Header";
+import Avatar from "@/components/Avatar";
+import Chart from "@/components/Chart";
+import StatusStrip from "@/components/StatusStrip";
+import Timing from "@/components/Timing";
+import TrendChip from "@/components/TrendChip";
+import MonitorDialog from "@/components/MonitorDialog";
+
+// Partials
+import Certificate from "./partials/Certificate";
+import DeleteButton from "./partials/DeleteButton";
+import Tile from "./partials/Tile";
+
+// Hooks
+import useHistory from "@/hooks/useHistory";
+import useLiveSync from "@/hooks/useLiveSync";
+
+// Store
+import useLiveStore from "@/store/useLiveStore";
+
+// Utils
+import { RANGES, summarize, trend, tone, codes, incidents, downsample, avgPhases } from "@/lib/stats";
+import { fmtTime, fmtDay, fmtDuration, codeLabel, stateOf } from "@/utils/shortcuts";
+
+// Styles
+import Styles from "./styles.module.scss";
 
 const RANGE_LABEL = { "1h": "1h", "24h": "24h", "7d": "7d" };
 const LEGEND = [
@@ -22,138 +40,37 @@ const LEGEND = [
   ["down", "5xx / error"],
 ];
 
-function useHistory(id, range) {
-  const [state, setState] = useState({ checks: [], to: 0 });
-
-  useEffect(() => {
-    const socket = getSocket();
-    const load = () => socket.emit("history", { id, range }, (checks) => setState({ checks, to: Date.now() }));
-    const onCheck = (e) => {
-      if (e.id !== id) return;
-      setState(({ checks }) => {
-        const to = e.check.at;
-        return { checks: [...checks.filter((c) => c.at >= to - RANGES[range]), e.check], to };
-      });
-    };
-    load();
-    socket.on("connect", load);
-    socket.on("check", onCheck);
-    return () => {
-      socket.off("connect", load);
-      socket.off("check", onCheck);
-    };
-  }, [id, range]);
-
-  return state;
-}
-
-function DeleteButton({ id }) {
-  const router = useRouter();
-  const [armed, setArmed] = useState(false);
-
-  function click() {
-    if (!armed) {
-      setArmed(true);
-      setTimeout(() => setArmed(false), 3000);
-      return;
-    }
-    getSocket().emit("remove", id, () => router.push("/"));
-  }
-
-  return (
-    <button className={s.delete} data-armed={armed} onClick={click}>
-      {armed ? "Click again to confirm" : "Delete monitor"}
-    </button>
-  );
-}
-
-const fmtDate = (t) => new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
-
-function Certificate({ m }) {
-  if (!m.cert && m.url.startsWith("http:")) return <p className={s.none}>Plain HTTP, so there is no certificate to check.</p>;
-  if (!m.cert) return <p className={s.none}>Waiting for the first successful check.</p>;
-  const now = Date.now();
-  const days = certDays(m.cert, now);
-  const { issued, expires } = m.cert;
-  const left = issued ? Math.min(Math.max((expires - now) / (expires - issued), 0), 1) : 0;
-
-  return (
-    <div className={s.cert} data-tone={certTone(days)}>
-      <b className={`num ${s.certDays}`}>
-        {days < 0 ? "Expired" : days}
-        {days >= 0 && <small>{days === 1 ? "day left" : "days left"}</small>}
-      </b>
-
-      {!!issued && (
-        <div className={s.lifetime}>
-          <div className={s.lifetimeBar} role="img" aria-label={`${Math.round(left * 100)}% of the certificate lifetime left`}>
-            <i style={{ width: `${(1 - left) * 100}%` }} />
-            <i style={{ width: `${left * 100}%` }} />
-          </div>
-          <div className={s.lifetimeDates}>
-            <span>Issued {fmtDate(issued)}</span>
-            <span>Expires {fmtDate(expires)}</span>
-          </div>
-        </div>
-      )}
-
-      <dl>
-        {!issued && (
-          <div>
-            <dt>Expires</dt>
-            <dd>{fmtDate(expires)}</dd>
-          </div>
-        )}
-        <div>
-          <dt>Issued to</dt>
-          <dd className="num">{m.cert.subject || "—"}</dd>
-        </div>
-        <div>
-          <dt>Issuer</dt>
-          <dd>{m.cert.issuer || "—"}</dd>
-        </div>
-      </dl>
-    </div>
-  );
-}
-
-function Tile({ label, value, unit, tone, children }) {
-  return (
-    <div className={s.tile} data-tone={tone}>
-      <span className="label">{label}</span>
-      <b className="num">
-        {value}
-        {unit && <small>{unit}</small>}
-      </b>
-      {children}
-    </div>
-  );
-}
-
-export default function Detail() {
+const Detail = () => {
+  useLiveSync();
   const { id } = useParams();
   const [range, setRange] = useState("1h");
-  const { monitors, connected } = useMonitors();
+  const { monitors, loaded } = useLiveStore();
   const { checks, to } = useHistory(id, range);
-  const m = monitors?.find((x) => x.id === id);
+  const m = monitors.find((x) => x.id === id);
 
-  if (monitors && !m) {
+  if (loaded && !m) {
     return (
       <main className="wrap">
-        <Header connected={connected} />
-        <div className={`panel ${s.missing}`}>
+        <Header />
+        <div className={`panel ${Styles.missing}`}>
           <p>Monitor not found.</p>
           <Link href="/">← All monitors</Link>
         </div>
       </main>
     );
   }
-  if (!m) return <main className="wrap"><Header connected={connected} /></main>;
+  if (!m) {
+    return (
+      <main className="wrap">
+        <Header />
+      </main>
+    );
+  }
 
   const last = m.checks.at(-1);
   const t = trend(m.checks);
   const st = summarize(checks);
-  const state = !last ? "idle" : !last.ok ? "down" : t.state === "slow" ? "slow" : "up";
+  const state = stateOf(m.checks);
   const codeList = codes(checks);
   const incList = incidents(checks);
   const recent = checks.slice(-20).reverse();
@@ -161,21 +78,21 @@ export default function Detail() {
 
   return (
     <main className="wrap">
-      <Header connected={connected} lastAt={last?.at} />
+      <Header lastAt={last?.at} />
 
-      <Link href="/" className={s.back}>
+      <Link href="/" className={Styles.back}>
         ← All monitors
       </Link>
 
-      <section className={s.title} data-tone={state}>
+      <section className={Styles.title} data-tone={state}>
         <Avatar url={m.url} name={m.name} size={56} />
-        <div className={s.titleText}>
+        <div className={Styles.titleText}>
           <h1>{m.name}</h1>
           <a href={m.url} target="_blank" rel="noreferrer">
             {m.url} ↗
           </a>
-          <div className={s.request}>
-            <span className={s.verb}>{m.method}</span>
+          <div className={Styles.request}>
+            <span className={Styles.verb}>{m.method}</span>
             {m.headerNames.map((h) => (
               <span key={h} title="Header value is hidden">
                 {h}: ••••
@@ -185,11 +102,11 @@ export default function Detail() {
           </div>
         </div>
         <span className="pill">{{ idle: "Pending", down: "Down", slow: "Slow", up: "Up" }[state]}</span>
-        <AddMonitor monitor={m} label="Edit" />
+        <MonitorDialog monitor={m} label="Edit" />
         <DeleteButton id={id} />
       </section>
 
-      <section className={`panel ${s.tiles}`}>
+      <section className={`panel ${Styles.tiles}`}>
         <Tile label="Current" value={last ? (last.ok ? last.ms : codeLabel(last)) : "—"} unit={last?.ok && "ms"} tone={tone(last)}>
           <TrendChip t={t} />
         </Tile>
@@ -200,8 +117,8 @@ export default function Detail() {
         <Tile label="Slowest" value={st.max || "—"} unit={st.max ? "ms" : ""} />
       </section>
 
-      <section className={`panel ${s.block}`}>
-        <div className={s.blockHead}>
+      <section className={`panel ${Styles.block}`}>
+        <div className={Styles.blockHead}>
           <div>
             <h2>Response time</h2>
             <span className="label">
@@ -219,19 +136,19 @@ export default function Detail() {
         <Chart checks={downsample(checks, 600)} from={to - RANGES[range]} to={to} />
       </section>
 
-      <div className={s.split}>
-        <section className={`panel ${s.block}`}>
-          <div className={s.blockHead}>
+      <div className={Styles.split}>
+        <section className={`panel ${Styles.block}`}>
+          <div className={Styles.blockHead}>
             <div>
               <h2>Where the time goes</h2>
               <span className="label">From request start to the first byte of the response</span>
             </div>
           </div>
-          {timing ? <Timing last={checks.findLast((c) => c.phases)?.phases} avg={timing} /> : <p className={s.none}>No timing data in this range yet.</p>}
+          {timing ? <Timing last={checks.findLast((c) => c.phases)?.phases} avg={timing} /> : <p className={Styles.none}>No timing data in this range yet.</p>}
         </section>
 
-        <section className={`panel ${s.block}`}>
-          <div className={s.blockHead}>
+        <section className={`panel ${Styles.block}`}>
+          <div className={Styles.blockHead}>
             <div>
               <h2>SSL certificate</h2>
               <span className="label">Checked on every request</span>
@@ -241,13 +158,13 @@ export default function Detail() {
         </section>
       </div>
 
-      <section className={`panel ${s.block}`}>
-        <div className={s.blockHead}>
+      <section className={`panel ${Styles.block}`}>
+        <div className={Styles.blockHead}>
           <div>
             <h2>Status history</h2>
             <span className="label">Last 90 checks · one block per minute</span>
           </div>
-          <div className={s.legend}>
+          <div className={Styles.legend}>
             {LEGEND.map(([k, text]) => (
               <span key={k} data-tone={k}>
                 <i /> {text}
@@ -258,34 +175,34 @@ export default function Detail() {
         <StatusStrip checks={m.checks} tall />
       </section>
 
-      <div className={s.split}>
-        <section className={`panel ${s.block}`}>
-          <div className={s.blockHead}>
+      <div className={Styles.split}>
+        <section className={`panel ${Styles.block}`}>
+          <div className={Styles.blockHead}>
             <h2>Status codes</h2>
             <span className="label">{RANGE_LABEL[range]}</span>
           </div>
-          {!codeList.length && <p className={s.none}>No data yet.</p>}
-          <ul className={s.codes}>
+          {!codeList.length && <p className={Styles.none}>No data yet.</p>}
+          <ul className={Styles.codes}>
             {codeList.map((c) => (
               <li key={c.status} data-tone={tone(c)}>
                 <span className="num">{c.status || "ERR"}</span>
-                <div className={s.bar}>
+                <div className={Styles.bar}>
                   <i style={{ width: `${(c.count / st.count) * 100}%` }} />
                 </div>
                 <span className="num">{c.count}</span>
-                <span className={`num ${s.pct}`}>{((c.count / st.count) * 100).toFixed(1)}%</span>
+                <span className={`num ${Styles.pct}`}>{((c.count / st.count) * 100).toFixed(1)}%</span>
               </li>
             ))}
           </ul>
         </section>
 
-        <section className={`panel ${s.block}`}>
-          <div className={s.blockHead}>
+        <section className={`panel ${Styles.block}`}>
+          <div className={Styles.blockHead}>
             <h2>Incidents</h2>
             <span className="label">{incList.length} total</span>
           </div>
-          {!incList.length && <p className={s.none}>No incidents in this range.</p>}
-          <ul className={s.incidents}>
+          {!incList.length && <p className={Styles.none}>No incidents in this range.</p>}
+          <ul className={Styles.incidents}>
             {incList.slice(0, 20).map((inc) => (
               <li key={inc.start} data-tone={inc.end ? "warn" : "down"}>
                 <i className="lamp" />
@@ -303,13 +220,13 @@ export default function Detail() {
         </section>
       </div>
 
-      <section className={`panel ${s.block}`}>
-        <div className={s.blockHead}>
+      <section className={`panel ${Styles.block}`}>
+        <div className={Styles.blockHead}>
           <h2>Recent checks</h2>
           <span className="label">Change vs. previous check</span>
         </div>
-        <div className={s.tableWrap}>
-          <table className={s.table}>
+        <div className={Styles.tableWrap}>
+          <table className={Styles.table}>
             <thead>
               <tr>
                 <th>Time</th>
@@ -332,8 +249,8 @@ export default function Detail() {
                       </span>
                     </td>
                     <td className="num">{c.ok ? `${c.ms} ms` : "—"}</td>
-                    <td className={`num ${s.ip}`}>{c.ip || "—"}</td>
-                    <td className={`num ${s.delta}`} data-tone={delta > 10 ? "slow" : delta < -10 ? "fast" : "normal"}>
+                    <td className={`num ${Styles.ip}`}>{c.ip || "—"}</td>
+                    <td className={`num ${Styles.delta}`} data-tone={delta > 10 ? "slow" : delta < -10 ? "fast" : "normal"}>
                       {delta > 0 ? `+${delta}% slower` : delta < 0 ? `${delta}% faster` : "—"}
                     </td>
                   </tr>
@@ -345,4 +262,6 @@ export default function Detail() {
       </section>
     </main>
   );
-}
+};
+
+export default Detail;

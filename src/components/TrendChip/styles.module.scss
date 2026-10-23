@@ -1,0 +1,10 @@
+.trend {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--tone);
+  white-space: nowrap;
+
+  .num { font-weight: 500; }
+}

@@ -1,0 +1,14 @@
+.avatar {
+  position: relative;
+  flex: none;
+  display: grid;
+  place-items: center;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #222736, #151925);
+  border: 1px solid var(--line-strong);
+  color: var(--moon);
+  font-family: var(--serif);
+  overflow: hidden;
+
+  img { width: 60%; height: 60%; object-fit: contain; }
+}

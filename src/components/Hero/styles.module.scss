@@ -1,0 +1,90 @@
+.hero {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 36px;
+  padding: 36px 0 56px;
+
+  @media (max-width: 1000px) {
+    grid-template-columns: auto 1fr;
+    .heroStats { grid-column: 1 / -1; }
+  }
+  @media (max-width: 560px) {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding-top: 12px;
+  }
+}
+
+.heroMoon {
+  position: relative;
+  display: grid;
+  place-items: center;
+
+  // moonlight halo
+  &::before {
+    content: "";
+    position: absolute;
+    width: 220%;
+    height: 220%;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(243, 234, 208, 0.16), transparent 60%);
+    pointer-events: none;
+  }
+  svg { position: relative; filter: drop-shadow(0 0 28px rgba(243, 234, 208, 0.25)); }
+
+  @media (max-width: 560px) { justify-self: start; svg { width: 72px; height: 72px; } }
+}
+
+.heroText {
+  min-width: 0;
+
+  h1 {
+    margin: 10px 0 10px;
+    font-family: var(--serif);
+    font-weight: 400;
+    font-size: clamp(36px, 5vw, 60px);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  p { margin: 0; color: var(--text-2); font-size: 15px; }
+}
+
+.hero[data-tone="down"] h1 { color: var(--down); }
+
+.kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.heroStats {
+  display: flex;
+  margin: 0;
+  border: 1px solid var(--line-strong);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.02);
+
+  > div {
+    padding: 18px 26px;
+    min-width: 0;
+    & + div { border-left: 1px solid var(--line-strong); }
+  }
+  dt { font-size: 12px; color: var(--muted); white-space: nowrap; }
+  dd {
+    margin: 8px 0 0;
+    font-size: 30px;
+    font-weight: 500;
+    letter-spacing: -0.03em;
+    white-space: nowrap;
+  }
+  small { font-size: 14px; color: var(--muted); margin: 0 3px; letter-spacing: 0; }
+  [data-tone="down"] { color: var(--down); }
+
+  @media (max-width: 560px) {
+    > div { flex: 1; padding: 14px; }
+    dd { font-size: 22px; }
+  }
+}

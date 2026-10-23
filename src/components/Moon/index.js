@@ -1,7 +1,7 @@
 // Uptime 90% or lower is a new moon, 100% is a full moon.
 export const phaseOf = (uptime) => Math.min(Math.max((uptime - 90) / 10, 0), 1);
 
-export default function Moon({ phase, size = 20, className }) {
+const Moon = ({ phase, size = 20, className }) => {
   const r = 10;
   const rx = r * Math.abs(1 - 2 * phase);
   const lit = `M0,${-r}A${r},${r} 0 0 1 0,${r}A${rx},${r} 0 0 ${phase > 0.5 ? 1 : 0} 0,${-r}Z`;
@@ -12,4 +12,6 @@ export default function Moon({ phase, size = 20, className }) {
       <path d={lit} fill="var(--moon)" />
     </svg>
   );
-}
+};
+
+export default Moon;

@@ -1,0 +1,8 @@
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  svg { filter: drop-shadow(0 0 10px rgba(243, 234, 208, 0.35)); }
+  span { font-family: var(--serif); font-style: italic; font-size: 28px; line-height: 1; letter-spacing: -0.01em; }
+}

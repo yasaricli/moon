@@ -1,12 +1,19 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
-import { getSocket } from "../lib/live.js";
-import s from "./AddMonitor.module.scss";
+
+// Store
+import useLiveStore from "@/store/useLiveStore";
+
+// Utils
+import { getSocket } from "@/utils/socket";
+
+// Styles
+import Styles from "@/styles/dialog.module.scss";
 
 const EMPTY = { name: "", group: "", url: "", method: "GET", headers: [], body: "" };
 
-function jsonError(text) {
+const jsonError = (text) => {
   if (!text.trim()) return "";
   try {
     JSON.parse(text);
@@ -14,7 +21,7 @@ function jsonError(text) {
   } catch (err) {
     return err.message;
   }
-}
+};
 
 // Header values and the body never reach the browser, so an edit starts
 // with header names only and both left blank to keep the stored values.
@@ -28,26 +35,25 @@ const fromMonitor = (m) => ({
 });
 
 // A trigger button plus the native <dialog> it opens. With `monitor`, it edits that monitor.
-export default function AddMonitor({ label = "New monitor", primary, monitor }) {
+const MonitorDialog = ({ label = "New monitor", primary, monitor }) => {
   const dialog = useRef();
   const titleId = useId();
   const [form, setForm] = useState(EMPTY);
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
-  const [groups, setGroups] = useState([]);
+  const groups = useLiveStore((state) => state.groups);
   const set = (field) => (e) => setForm({ ...form, [field]: e.target.value });
   const setHeader = (i, field, value) =>
     setForm({ ...form, headers: form.headers.map((h, j) => (j === i ? { ...h, [field]: value } : h)) });
   const bodyError = form.method === "POST" ? jsonError(form.body) : "";
 
-  function open() {
+  const open = () => {
     setForm(monitor ? fromMonitor(monitor) : EMPTY);
     setError("");
-    getSocket().emit("groups", setGroups);
     dialog.current.showModal();
-  }
+  };
 
-  function submit(e) {
+  const submit = (e) => {
     e.preventDefault();
     if (bodyError) return setError("Request body must be valid JSON.");
     setBusy(true);
@@ -58,22 +64,22 @@ export default function AddMonitor({ label = "New monitor", primary, monitor }) 
       if (res.error) return;
       dialog.current.close();
     });
-  }
+  };
 
   return (
     <>
-      <button type="button" className={monitor ? s.triggerQuiet : primary ? s.triggerPrimary : s.trigger} onClick={open}>
+      <button type="button" className={monitor ? Styles.triggerQuiet : primary ? Styles.triggerPrimary : Styles.trigger} onClick={open}>
         {!monitor && <span aria-hidden="true">+</span>} {label}
       </button>
 
       <dialog
         ref={dialog}
-        className={s.dialog}
+        className={Styles.dialog}
         aria-labelledby={titleId}
         onClick={(e) => e.target === dialog.current && dialog.current.close()}
       >
-        <form className={s.sheet} onSubmit={submit}>
-          <header className={s.head}>
+        <form className={Styles.sheet} onSubmit={submit}>
+          <header className={Styles.head}>
             <div>
               <h2 id={titleId}>{monitor ? "Edit monitor" : "New monitor"}</h2>
               <p>
@@ -82,15 +88,15 @@ export default function AddMonitor({ label = "New monitor", primary, monitor }) 
                   : "moon will request this URL every minute and record how fast it answers."}
               </p>
             </div>
-            <button type="button" className={s.close} onClick={() => dialog.current.close()} aria-label="Close">
+            <button type="button" className={Styles.close} onClick={() => dialog.current.close()} aria-label="Close">
               ×
             </button>
           </header>
 
-          <div className={s.field}>
+          <div className={Styles.field}>
             <span>Request</span>
-            <div className={s.request}>
-              <div className={s.method} role="radiogroup" aria-label="Method">
+            <div className={Styles.request}>
+              <div className={Styles.method} role="radiogroup" aria-label="Method">
                 {["GET", "POST"].map((m) => (
                   <button key={m} type="button" role="radio" aria-checked={form.method === m} onClick={() => setForm({ ...form, method: m })}>
                     {m}
@@ -98,7 +104,7 @@ export default function AddMonitor({ label = "New monitor", primary, monitor }) 
                 ))}
               </div>
               <input
-                className={s.url}
+                className={Styles.url}
                 type="url"
                 required
                 autoFocus
@@ -110,13 +116,13 @@ export default function AddMonitor({ label = "New monitor", primary, monitor }) 
             </div>
           </div>
 
-          <label className={s.field}>
+          <label className={Styles.field}>
             <span>Name <em>optional</em></span>
             <input placeholder="Defaults to the host name" maxLength={60} value={form.name} onChange={set("name")} />
           </label>
 
           {!!groups.length && (
-            <label className={s.field}>
+            <label className={Styles.field}>
               <span>Tab <em>optional</em></span>
               <select value={form.group} onChange={set("group")}>
                 <option value="">No tab</option>
@@ -129,10 +135,10 @@ export default function AddMonitor({ label = "New monitor", primary, monitor }) 
             </label>
           )}
 
-          <div className={s.field}>
+          <div className={Styles.field}>
             <span>Headers <em>optional</em></span>
             {form.headers.map((h, i) => (
-              <div key={i} className={s.headerRow}>
+              <div key={i} className={Styles.headerRow}>
                 <input placeholder="Authorization" value={h.key} onChange={(e) => setHeader(i, "key", e.target.value)} aria-label="Header name" />
                 <input placeholder={monitor?.headerNames.includes(h.key) ? "Unchanged" : "Bearer …"} value={h.value} onChange={(e) => setHeader(i, "value", e.target.value)} aria-label="Header value" />
                 <button
@@ -144,28 +150,28 @@ export default function AddMonitor({ label = "New monitor", primary, monitor }) 
                 </button>
               </div>
             ))}
-            <button type="button" className={s.ghost} onClick={() => setForm({ ...form, headers: [...form.headers, { key: "", value: "" }] })}>
+            <button type="button" className={Styles.ghost} onClick={() => setForm({ ...form, headers: [...form.headers, { key: "", value: "" }] })}>
               + Add header
             </button>
           </div>
 
           {form.method === "POST" && (
-            <label className={s.field}>
+            <label className={Styles.field}>
               <span>
                 JSON body
                 {form.body.trim() && <b data-tone={bodyError ? "down" : "up"}>{bodyError ? "invalid JSON" : "valid JSON"}</b>}
               </span>
               <textarea rows={6} spellCheck={false} placeholder={monitor?.bodySize ? `Unchanged (${monitor.bodySize} B). Type to replace.` : '{\n  "ping": true\n}'} value={form.body} onChange={set("body")} />
-              {bodyError && <small className={s.hint}>{bodyError}</small>}
+              {bodyError && <small className={Styles.hint}>{bodyError}</small>}
             </label>
           )}
 
-          <footer className={s.foot}>
-            {error ? <p className={s.error}>{error}</p> : <p>Header values stay on the server.</p>}
-            <button type="button" className={s.cancel} onClick={() => dialog.current.close()}>
+          <footer className={Styles.foot}>
+            {error ? <p className={Styles.error}>{error}</p> : <p>Header values stay on the server.</p>}
+            <button type="button" className={Styles.cancel} onClick={() => dialog.current.close()}>
               Cancel
             </button>
-            <button className={s.submit} disabled={busy}>
+            <button className={Styles.submit} disabled={busy}>
               {monitor ? (busy ? "Saving…" : "Save changes") : busy ? "Adding…" : "Start monitoring"}
             </button>
           </footer>
@@ -173,4 +179,6 @@ export default function AddMonitor({ label = "New monitor", primary, monitor }) 
       </dialog>
     </>
   );
-}
+};
+
+export default MonitorDialog;

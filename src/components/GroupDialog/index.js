@@ -1,12 +1,23 @@
 "use client";
 
 import { useId, useRef, useState } from "react";
-import { getSocket } from "../lib/live.js";
-import Avatar from "./Avatar.js";
-import s from "./AddMonitor.module.scss";
+
+// Components
+import Avatar from "@/components/Avatar";
+
+// Store
+import useLiveStore from "@/store/useLiveStore";
+
+// Utils
+import { getSocket } from "@/utils/socket";
+
+// Styles
+import Styles from "@/styles/dialog.module.scss";
 
 // A trigger button plus a dialog to rename a tab, pick its monitors or delete it.
-export default function GroupDialog({ group, groups, monitors, label, primary }) {
+const GroupDialog = ({ group, label, primary }) => {
+  const monitors = useLiveStore((state) => state.monitors);
+  const groups = useLiveStore((state) => state.groups);
   const dialog = useRef();
   const titleId = useId();
   const [name, setName] = useState("");
@@ -16,19 +27,17 @@ export default function GroupDialog({ group, groups, monitors, label, primary })
   const [armed, setArmed] = useState(false);
   const tabName = (id) => groups.find((g) => g.id === id)?.name;
 
-  function open() {
+  const open = () => {
     setName(group.name);
     setPicked(monitors.filter((m) => m.group === group.id).map((m) => m.id));
     setError("");
     setArmed(false);
     dialog.current.showModal();
-  }
+  };
 
-  function toggle(id) {
-    setPicked(picked.includes(id) ? picked.filter((x) => x !== id) : [...picked, id]);
-  }
+  const toggle = (id) => setPicked(picked.includes(id) ? picked.filter((x) => x !== id) : [...picked, id]);
 
-  function submit(e) {
+  const submit = (e) => {
     e.preventDefault();
     setBusy(true);
     getSocket().emit("group:save", { id: group.id, name, monitors: picked }, (res) => {
@@ -37,46 +46,46 @@ export default function GroupDialog({ group, groups, monitors, label, primary })
       if (res.error) return;
       dialog.current.close();
     });
-  }
+  };
 
-  function remove() {
+  const remove = () => {
     if (!armed) return setArmed(true);
     getSocket().emit("group:remove", group.id, () => dialog.current.close());
-  }
+  };
 
   return (
     <>
-      <button type="button" className={primary ? s.triggerPrimary : s.triggerQuiet} onClick={open}>
+      <button type="button" className={primary ? Styles.triggerPrimary : Styles.triggerQuiet} onClick={open}>
         {label}
       </button>
 
       <dialog
         ref={dialog}
-        className={s.dialog}
+        className={Styles.dialog}
         aria-labelledby={titleId}
         onClick={(e) => e.target === dialog.current && dialog.current.close()}
       >
-        <form className={s.sheet} onSubmit={submit}>
-          <header className={s.head}>
+        <form className={Styles.sheet} onSubmit={submit}>
+          <header className={Styles.head}>
             <div>
               <h2 id={titleId}>Edit tab</h2>
               <p>Pick the monitors that belong here. A monitor sits in one tab at most.</p>
             </div>
-            <button type="button" className={s.close} onClick={() => dialog.current.close()} aria-label="Close">
+            <button type="button" className={Styles.close} onClick={() => dialog.current.close()} aria-label="Close">
               ×
             </button>
           </header>
 
-          <label className={s.field}>
+          <label className={Styles.field}>
             <span>Name</span>
             <input required maxLength={40} value={name} onChange={(e) => setName(e.target.value)} />
           </label>
 
-          <div className={s.field}>
+          <div className={Styles.field}>
             <span>
               Monitors <em>{picked.length} selected</em>
             </span>
-            <div className={s.picks}>
+            <div className={Styles.picks}>
               {monitors.map((m) => (
                 <label key={m.id}>
                   <input type="checkbox" checked={picked.includes(m.id)} onChange={() => toggle(m.id)} />
@@ -88,18 +97,18 @@ export default function GroupDialog({ group, groups, monitors, label, primary })
             </div>
           </div>
 
-          <footer className={s.foot}>
+          <footer className={Styles.foot}>
             {error ? (
-              <p className={s.error}>{error}</p>
+              <p className={Styles.error}>{error}</p>
             ) : (
-              <button type="button" className={s.danger} data-armed={armed} onClick={remove}>
+              <button type="button" className={Styles.danger} data-armed={armed} onClick={remove}>
                 {armed ? "Click again to delete" : "Delete tab"}
               </button>
             )}
-            <button type="button" className={s.cancel} onClick={() => dialog.current.close()}>
+            <button type="button" className={Styles.cancel} onClick={() => dialog.current.close()}>
               Cancel
             </button>
-            <button className={s.submit} disabled={busy}>
+            <button className={Styles.submit} disabled={busy}>
               {busy ? "Saving…" : "Save tab"}
             </button>
           </footer>
@@ -107,4 +116,6 @@ export default function GroupDialog({ group, groups, monitors, label, primary })
       </dialog>
     </>
   );
-}
+};
+
+export default GroupDialog;

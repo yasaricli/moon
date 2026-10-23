@@ -1,5 +1,7 @@
 import { Geist, Geist_Mono, Instrument_Serif } from "next/font/google";
-import "../styles/main.scss";
+
+// Styles
+import "@/styles/main.scss";
 
 const sans = Geist({ subsets: ["latin"], variable: "--font-sans" });
 const mono = Geist_Mono({ subsets: ["latin"], variable: "--font-mono" });
@@ -10,7 +12,7 @@ export const metadata = {
   description: "Uptime and response time monitoring",
 };
 
-export default function RootLayout({ children }) {
+const RootLayout = ({ children }) => {
   return (
     <html lang="en" className={`${sans.variable} ${mono.variable} ${serif.variable}`}>
       <body>
@@ -24,4 +26,6 @@ export default function RootLayout({ children }) {
       </body>
     </html>
   );
-}
+};
+
+export default RootLayout;

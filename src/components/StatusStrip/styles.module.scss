@@ -1,0 +1,19 @@
+.strip {
+  display: flex;
+  gap: 2px;
+  height: 22px;
+
+  i {
+    flex: 1;
+    min-width: 1px;
+    border-radius: 2px;
+    background: var(--tone);
+    opacity: 0.9;
+    transition: transform 0.15s, opacity 0.15s;
+
+    &[data-tone="idle"] { background: var(--idle); opacity: 1; }
+    &:hover { opacity: 1; transform: scaleY(1.25); }
+  }
+}
+
+.stripTall { height: 40px; gap: 3px; i { border-radius: 3px; } }

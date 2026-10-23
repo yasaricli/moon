@@ -1,0 +1,38 @@
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 26px 0;
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  flex-wrap: wrap;
+  font-size: 13px;
+  color: var(--text-2);
+}
+
+.metaItem {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.ring {
+  transform: rotate(-90deg);
+
+  circle { fill: none; stroke-width: 2; stroke: var(--line-strong); }
+  circle + circle { stroke: var(--moon); stroke-linecap: round; transition: stroke-dashoffset 1s linear; }
+}
+
+.clock {
+  padding: 5px 10px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--line);
+  color: var(--text);
+}

@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import s from "./ui.module.scss";
 
-export default function FullscreenButton() {
+// Styles
+import Styles from "./styles.module.scss";
+
+const FullscreenButton = () => {
   const [full, setFull] = useState(false);
 
   useEffect(() => {
@@ -12,14 +14,14 @@ export default function FullscreenButton() {
     return () => document.removeEventListener("fullscreenchange", sync);
   }, []);
 
-  function toggle() {
+  const toggle = () => {
     if (document.fullscreenElement) return document.exitFullscreen();
     document.documentElement.requestFullscreen();
-  }
+  };
 
   const label = full ? "Exit full screen" : "Full screen";
   return (
-    <button type="button" className={s.iconButton} onClick={toggle} aria-label={label} title={label}>
+    <button type="button" className={Styles.iconButton} onClick={toggle} aria-label={label} title={label}>
       <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
         {full ? (
           <path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5" />
@@ -29,4 +31,6 @@ export default function FullscreenButton() {
       </svg>
     </button>
   );
-}
+};
+
+export default FullscreenButton;
