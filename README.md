@@ -109,3 +109,7 @@ npm test        # stats self-check
 A single Node process (`server.js`) runs Next.js, socket.io and the checker loop together. Every 60 seconds it requests all monitors in parallel with a 10 second timeout, stores each result in MongoDB and broadcasts it to connected browsers. Any status of 400 or above counts as down.
 
 Stack: Next.js, React, SCSS modules, socket.io, MongoDB (mongoose).
+
+## License
+
+[MIT](LICENSE)
